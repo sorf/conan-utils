@@ -7,7 +7,7 @@ import tempfile
 from enum import Enum
 
 if (sys.version_info.major, sys.version_info.minor) < (3, 5):
-    raise RuntimeError("Python 3.5 is required")
+    raise RuntimeError('Python 3.5 is required')
 
 class _LanguageType(Enum):
     C = 'c'
@@ -22,7 +22,7 @@ def _check_compilation_result(result):
 
 def _get_gcc_version_implementation(language_type):
     with tempfile.TemporaryDirectory() as tmpdirname:
-        print_version_exe = os.path.join(tmpdirname, "print_version")
+        print_version_exe = os.path.join(tmpdirname, 'print_version')
         print_version_code = """
             #include <stdio.h>
             int main(void)
@@ -49,19 +49,33 @@ def _get_gcc_version_implementation(language_type):
         return result.stdout
 
 def get_gcc_version():
-    """ Returns the curret `gcc` version as a string formated as major.minor.patch-level.
+    """ Returns the current `gcc` version as a string formated as major.minor.patch-level.
     """
     return _get_gcc_version_implementation(_LanguageType.C)
 
 def get_gpp_version():
-    """ Returns the curret `g++` version as a string formated as major.minor.patch-level.
+    """ Returns the current `g++` version as a string formated as major.minor.patch-level.
     """
     return _get_gcc_version_implementation(_LanguageType.CPP)
 
 
+def check_gcc_version(version):
+    """ Checks that the current `gcc` version is the one provided.
+        The version to check should be of the format:
+        major[.minor[.patch-level]]
+    """
+    return get_gcc_version().startswith(version)
+
+def check_gpp_version(version):
+    """ Checks that the current `g++` version is the one provided.
+        The version to check should be of the format:
+        major[.minor[.patch-level]]
+    """
+    return get_gpp_version().startswith(version)
+
 def _get_clang_version_implementation(language_type):
     with tempfile.TemporaryDirectory() as tmpdirname:
-        print_version_exe = os.path.join(tmpdirname, "print_version")
+        print_version_exe = os.path.join(tmpdirname, 'print_version')
         print_version_code = """
             #include <stdio.h>
             int main(void)
@@ -89,39 +103,84 @@ def _get_clang_version_implementation(language_type):
         return result.stdout
 
 def get_clang_version():
-    """ Returns the curret `clang` version as a string formated as major.minor.patch-level.
+    """ Returns the current `clang` version as a string formated as major.minor.patch-level.
     """
     return _get_clang_version_implementation(_LanguageType.C)
 
 def get_clangpp_version():
-    """ Returns the curret `clang++` version as a string formated as major.minor.patch-level.
+    """ Returns the current `clang++` version as a string formated as major.minor.patch-level.
     """
     return _get_clang_version_implementation(_LanguageType.CPP)
+
+def check_clang_version(version):
+    """ Checks that the current `clang` version is the one provided.
+        The version to check should be of the format:
+        major[.minor[.patch-level]]
+    """
+    return get_clang_version().startswith(version)
+
+def check_clangpp_version(version):
+    """ Checks that the current `clang++` version is the one provided.
+        The version to check should be of the format:
+        major[.minor[.patch-level]]
+    """
+    return get_clangpp_version().startswith(version)
+
+
+def _print_compiler_version(compiler):
+    status = 0
+    if compiler == 'gcc':
+        print(get_gcc_version())
+    elif compiler == 'g++':
+        print(get_gcc_version())
+    elif compiler == 'clang':
+        print(get_clang_version())
+    elif compiler == 'clang++':
+        print(get_clangpp_version())
+    else:
+        status = 1
+    return status
+
+def _print_check_compiler_version(compiler, version):
+    status = 0
+    check = False
+    if compiler == 'gcc':
+        check = check_gcc_version(version)
+    elif compiler == 'g++':
+        check = check_gcc_version(version)
+    elif compiler == 'clang':
+        check = check_clang_version(version)
+    elif compiler == 'clang++':
+        check = check_clangpp_version(version)
+    else:
+        status = 1
+    if status == 0:
+        print('%s version %s %s' % (
+            compiler,
+            'is' if check else 'is NOT',
+            version))
+        if not check:
+            status = 1
+
+    return status
 
 def _main():
     status = 0
     try:
-        if len(sys.argv) > 1:
-            if sys.argv[1] == "gcc":
-                print(get_gcc_version())
-            elif sys.argv[1] == "g++":
-                print(get_gcc_version())
-            elif sys.argv[1] == "clang":
-                print(get_clang_version())
-            elif sys.argv[1] == "clang++":
-                print(get_clangpp_version())
-            else:
-                status = 1
+        if len(sys.argv) == 2:
+            status = _print_compiler_version(sys.argv[1])
+        elif len(sys.argv) == 3:
+            status = _print_check_compiler_version(sys.argv[1], sys.argv[2])
         else:
             status = 2
     except OSError as error:
-        print(sys.argv[1] + ":", error, file=sys.stderr)
+        print(sys.argv[1] + ':', error, file=sys.stderr)
         status = 3
     except CompilationError as error:
-        print(sys.argv[1] + ":", error, file=sys.stderr)
+        print(sys.argv[1] + ':', error, file=sys.stderr)
         status = 4
 
     sys.exit(status)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     _main()
