@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ -n "$GCC_COMMAND" ]
+then
+    $GCC_COMMAND $@
+else
+    /usr/bin/gcc $@
+fi
+

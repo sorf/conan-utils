@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ -n "$CLANGXX_COMMAND" ]
+then
+    $CLANGXX_COMMAND $@
+else
+    /usr/bin/clang++ $@
+fi
+

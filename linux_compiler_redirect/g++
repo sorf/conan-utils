@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ -n "$GXX_COMMAND" ]
+then
+    $GXX_COMMAND $@
+else
+    /usr/bin/g++ $@
+fi
+

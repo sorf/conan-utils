@@ -1,9 +1,7 @@
 """ Functions to retrieve compiler versions.
 """
-import os
 import subprocess
 import sys
-import tempfile
 from enum import Enum
 
 if (sys.version_info.major, sys.version_info.minor) < (3, 5):
@@ -23,8 +21,8 @@ def _check_compilation_result(result):
 def _get_gcc_version_implementation(language_type):
     result = subprocess.run(
         ['g++' if language_type == _LanguageType.CPP else 'gcc',
-            '-x', language_type.value,
-            '-E', '-P', '-'],
+         '-x', language_type.value,
+         '-E', '-P', '-'],
         input='__GNUC__.__GNUC_MINOR__.__GNUC_PATCHLEVEL__',
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -61,8 +59,8 @@ def check_gpp_version(version):
 def _get_clang_version_implementation(language_type):
     result = subprocess.run(
         ['clang++' if language_type == _LanguageType.CPP else 'clang',
-            '-x', language_type.value,
-            '-E', '-P', '-'],
+         '-x', language_type.value,
+         '-E', '-P', '-'],
         input='__clang_major__.__clang_minor__.__clang_patchlevel__',
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
