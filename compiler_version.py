@@ -21,32 +21,17 @@ def _check_compilation_result(result):
         raise CompilationError(result.stdout)
 
 def _get_gcc_version_implementation(language_type):
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        print_version_exe = os.path.join(tmpdirname, 'print_version')
-        print_version_code = """
-            #include <stdio.h>
-            int main(void)
-            {
-                printf("%d.%d.%d", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
-                return 0;
-            }
-        """
-        _check_compilation_result(subprocess.run(
-            ['g++' if language_type == _LanguageType.CPP else 'gcc',
-             '-x', language_type.value,
-             '-o', print_version_exe, '-'],
-            input=print_version_code,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
-            check=False))
-        result = subprocess.run(
-            [print_version_exe],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
-            check=True)
-        return result.stdout
+    result = subprocess.run(
+        ['g++' if language_type == _LanguageType.CPP else 'gcc',
+            '-x', language_type.value,
+            '-E', '-P', '-'],
+        input='__GNUC__.__GNUC_MINOR__.__GNUC_PATCHLEVEL__',
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True,
+        check=False)
+    _check_compilation_result(result)
+    return "".join(result.stdout.split()).strip()
 
 def get_gcc_version():
     """ Returns the current `gcc` version as a string formated as major.minor.patch-level.
@@ -74,33 +59,17 @@ def check_gpp_version(version):
     return get_gpp_version().startswith(version)
 
 def _get_clang_version_implementation(language_type):
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        print_version_exe = os.path.join(tmpdirname, 'print_version')
-        print_version_code = """
-            #include <stdio.h>
-            int main(void)
-            {
-                printf("%d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);
-                return 0;
-            }
-        """
-        _check_compilation_result(subprocess.run(
-            ['clang++' if language_type == _LanguageType.CPP else 'clang',
-             '-x', language_type.value,
-             '-o', print_version_exe, '-'],
-            input=print_version_code,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
-            check=False))
-
-        result = subprocess.run(
-            [print_version_exe],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
-            check=True)
-        return result.stdout
+    result = subprocess.run(
+        ['clang++' if language_type == _LanguageType.CPP else 'clang',
+            '-x', language_type.value,
+            '-E', '-P', '-'],
+        input='__clang_major__.__clang_minor__.__clang_patchlevel__',
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True,
+        check=False)
+    _check_compilation_result(result)
+    return "".join(result.stdout.split()).strip()
 
 def get_clang_version():
     """ Returns the current `clang` version as a string formated as major.minor.patch-level.
